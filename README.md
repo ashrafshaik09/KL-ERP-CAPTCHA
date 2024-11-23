@@ -1,6 +1,6 @@
 # CAPTCHA Autofill Extension
 
-This project is a Chrome extension designed to automatically fill in CAPTCHA fields on the KL ERP website. It uses Tesseract.js for Optical Character Recognition (OCR) to read CAPTCHA images and fill in the corresponding input fields.
+This project is an extension/add-on for browsers, designed to automatically fill in the CAPTCHA field on the KL ERP website. It uses Tesseract.js for Optical Character Recognition (OCR) to read CAPTCHA images and fill in the corresponding input fields. Hope it saves atleast a few keys clicks and taps, and few seconds of the Life too :)
 
 ## Features
 
@@ -22,6 +22,14 @@ This project is a Chrome extension designed to automatically fill in CAPTCHA fie
 2. The extension will automatically detect and process the CAPTCHA image.
 3. The recognized text will be autofilled into the CAPTCHA input field.
 
+## Troubleshoot
+
+1. This is a pre-trained model from Tesseract, so it is not 100% accurate.
+2. If wrongly predicted, you can click on the captcha image to refresh, or, manually edit the few letters.
+3. If, by chance of no visible functioning of the extension/add-on, try to refresh the webpage.
+4. You can also check the console through 'inspect' option to see logs.
+
+
 ## Files
 
 - `content.js`: Contains the logic for processing CAPTCHA images and performing OCR.
@@ -29,18 +37,10 @@ This project is a Chrome extension designed to automatically fill in CAPTCHA fie
 - `manifest.json`: Defines the extension's metadata, permissions, and scripts to be loaded.
 - `icon.png`: The icon for the extension.
 
-## Dependencies
-
-- [Tesseract.js](https://github.com/naptha/tesseract.js): A JavaScript library for OCR.
-
-## License
-
-This project is licensed under the MIT License.
-
 ## Contributing
 
 Contributions are welcome! Please open an issue or submit a pull request for any changes or improvements.
 
 ## Contact
 
-For any questions or support, please contact the project maintainer.
+For any questions or support or improvements, lets connect to discuss.
