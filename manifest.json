@@ -1,13 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "CAPTCHA Autofill",
-  "version": "1.0",
+  "name": "KL CAPTCHA Autofill",
+  "version": "1.5",
   "description": "A CAPTCHA autofill extension for KL ERP.",
-  "permissions": ["activeTab", "scripting"],
-  "host_permissions": ["https://newerp.kluniversity.in/"],
+  "permissions": ["activeTab", "scripting", "fetch"],
+  "host_permissions": [
+    "https://newerp.kluniversity.in/*",
+    "https://script.google.com/macros/*",
+    "https://raw.githubusercontent.com/*"
+  ],
   "content_scripts": [
     {
-      "matches": ["https://newerp.kluniversity.in/"],
+      "matches": ["https://newerp.kluniversity.in/*"],
       "js": ["scripts/tesseract.min.js", "content.js"]
     }
   ],
@@ -16,5 +20,13 @@
   },
   "icons": {
     "48": "icon.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  "env":{
+    "WEBAPP_URL": "https://script.google.com/macros/s/AKfycbxvUqKy3L-GpXHQWY4qij4XzpDj5XCQh_vg7cYQSJFw2nXfs35Gudbm0AHXXSyKb1xh/exec",
+    "SECRET_TOKEN": "999",
+    "LANG_PATH": "https://github.com/naptha/tessdata/tree/gh-pages/4.0.0_best"
   }
 }
