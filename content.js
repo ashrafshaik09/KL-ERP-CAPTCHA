@@ -1,8 +1,7 @@
-// Configuration for data collection
 const CONFIG = {
   WEBAPP_URL: chrome.runtime.getManifest().env.WEBAPP_URL,
   SECRET_TOKEN: chrome.runtime.getManifest().env.SECRET_TOKEN,
-  DEBUG: true,
+  DEBUG: false,
   ENABLE_DATA_COLLECTION: true,
   COLLECT_ALL_CAPTCHAS: true,
   MAX_OCR_RETRIES: 2,
@@ -10,32 +9,25 @@ const CONFIG = {
     tessedit_char_whitelist: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
     langPath: chrome.runtime.getManifest().env.LANG_PATH
   },
-  // Success redirect URLs that indicate valid CAPTCHA entry
+
   SUCCESS_URLS: [
     'https://newerp.kluniversity.in/index.php?r=site%2Findexindi',
     'https://newerp.kluniversity.in/index.php?r=site%2Findexparent'
   ],
-  // Store pending CAPTCHA submissions until successful login
+
   PENDING_STORAGE_KEY: 'pendingCaptchaSubmissions'
 };
 
-// State management
 const processedCaptchas = new Set();
 let currentCaptchaData = { imageData: null, prediction: null, timestamp: null };
 let lastProcessedCaptchaUrl = null;
 let ocrRetryCount = 0;
 let isLoggedIn = false;
 
-/**
- * Check if the current URL is a success URL
- */
 function isSuccessUrl(url) {
   return CONFIG.SUCCESS_URLS.some(successUrl => url.includes(successUrl));
 }
 
-/**
- * Store pending CAPTCHA submissions for later processing
- */
 function storePendingSubmission(imageData, captchaText, isCorrected) {
   try {
     const pendingSubmission = {
@@ -44,8 +36,7 @@ function storePendingSubmission(imageData, captchaText, isCorrected) {
       isCorrected,
       timestamp: Date.now()
     };
-    
-    // Store in sessionStorage to persist during redirect
+
     sessionStorage.setItem(CONFIG.PENDING_STORAGE_KEY, JSON.stringify(pendingSubmission));
     
     if (CONFIG.DEBUG) console.log(`Stored pending CAPTCHA submission: ${captchaText}`);
@@ -54,9 +45,6 @@ function storePendingSubmission(imageData, captchaText, isCorrected) {
   }
 }
 
-/**
- * Process any pending CAPTCHA submissions after successful login
- */
 function processPendingSubmissions() {
   try {
     const pendingSubmissionJson = sessionStorage.getItem(CONFIG.PENDING_STORAGE_KEY);
@@ -64,13 +52,12 @@ function processPendingSubmissions() {
     
     const pendingSubmission = JSON.parse(pendingSubmissionJson);
     
-    // Check if submission is recent (within last 30 seconds)
     const isRecent = Date.now() - pendingSubmission.timestamp < 30000;
     
     if (isRecent) {
       if (CONFIG.DEBUG) console.log(`Processing pending CAPTCHA submission after successful login: ${pendingSubmission.captchaText}`);
       
-      // Now we know this was a valid CAPTCHA, send it
+      
       sendCaptchaData(
         pendingSubmission.imageData, 
         pendingSubmission.captchaText, 
@@ -80,16 +67,12 @@ function processPendingSubmissions() {
       if (CONFIG.DEBUG) console.log('Discarding old pending submission');
     }
     
-    // Clear the pending submission
     sessionStorage.removeItem(CONFIG.PENDING_STORAGE_KEY);
   } catch (error) {
     console.error('Error processing pending submissions:', error);
   }
 }
 
-/**
- * Send CAPTCHA data to collection service
- */
 function sendCaptchaData(imageData, captchaText, isCorrected) {
   if (!CONFIG.ENABLE_DATA_COLLECTION) return;
   if (!isCorrected && !CONFIG.COLLECT_ALL_CAPTCHAS) return;
@@ -125,9 +108,6 @@ function sendCaptchaData(imageData, captchaText, isCorrected) {
   .catch(error => console.error("Error sending CAPTCHA data:", error));
 }
 
-/**
- * Event handlers for CAPTCHA submission
- */
 function handleCaptchaKeydown(event) {
   if (event.key === 'Enter') {
     queueCaptchaSubmission(event.target.value);
@@ -141,9 +121,6 @@ function handleFormSubmit() {
   }
 }
 
-/**
- * Queue CAPTCHA submission to be sent after successful login
- */
 function queueCaptchaSubmission(value) {
   if (currentCaptchaData.imageData && value.trim()) {
     const isCorrected = currentCaptchaData.prediction !== value;
@@ -157,9 +134,6 @@ function queueCaptchaSubmission(value) {
   }
 }
 
-/**
- * Set up data collection for CAPTCHA input
- */
 function setupCaptchaDataCollection(captchaInput) {
   const loginForm = captchaInput.closest('form');
   if (!loginForm) return;
@@ -176,9 +150,6 @@ function setupCaptchaDataCollection(captchaInput) {
   captchaInput._hasEventListeners = true;
 }
 
-/**
- * Image preprocessing
- */
 function preprocessImage(blob) {
   return new Promise((resolve) => {
     const img = new Image();
@@ -205,9 +176,6 @@ function preprocessImage(blob) {
   });
 }
 
-/**
- * OCR with error handling
- */
 function performOCR(preprocessedImage, captchaInput) {
   const options = ocrRetryCount > 0 ? 
     { tessedit_char_whitelist: 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ' } : 
@@ -239,9 +207,6 @@ function performOCR(preprocessedImage, captchaInput) {
     });
 }
 
-/**
- * Main CAPTCHA processing function
- */
 function processCaptcha() {
   const captchaImg = document.querySelector("#loginform-captcha-image");
   const captchaInput = document.querySelector("#loginform-captcha");
@@ -270,9 +235,6 @@ function processCaptcha() {
     .catch(() => captchaInput.focus());
 }
 
-/**
- * Observe CAPTCHA refresh
- */
 function observeCaptchaRefresh() {
   const captchaImg = document.querySelector("#loginform-captcha-image");
   if (!captchaImg) return;
@@ -294,9 +256,6 @@ function observeCaptchaRefresh() {
   captchaImg._refreshObserver = observer;
 }
 
-/**
- * Main page observer
- */
 function startCaptchaObserver() {
   if (window._pageObserver) {
     window._pageObserver.disconnect();
@@ -319,7 +278,6 @@ function startCaptchaObserver() {
   observer.observe(document.body, { childList: true, subtree: true });
   window._pageObserver = observer;
 
-  // Check if CAPTCHA is already on the page
   const captchaImg = document.querySelector("#loginform-captcha-image");
   const captchaInput = document.querySelector("#loginform-captcha");
   
@@ -329,9 +287,6 @@ function startCaptchaObserver() {
   }
 }
 
-/**
- * Check if we're on a success page and process any pending submissions
- */
 function checkForSuccessfulLogin() {
   const currentUrl = window.location.href;
   
@@ -344,9 +299,6 @@ function checkForSuccessfulLogin() {
   }
 }
 
-/**
- * Main initialization function
- */
 function initialize() {
   // Process any pending submissions from previous login attempts
   checkForSuccessfulLogin();
